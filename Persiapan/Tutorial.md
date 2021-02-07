@@ -1,8 +1,9 @@
 <p align="center">
     <img width=250 weigth=250 src="https://avatars1.githubusercontent.com/u/55744810?s=460&       u=0c5a11e08d64a6bc0d524aa0e9293052d144330d&v=4" /><br>
+    <img src="https://img.shields.io/badge/Telegram-d__fordlalatina-orange?logo=Telegram&style=for-the-badge"/>
     <div align="center">
         <i>Dicky Mulia Fiqri</i><br>
-        <i>SMKN 1 Banyuwangi</i><br><br>
+        <i>SMKN 1 Banyuwangi</i>
     </div>
 </p>
 
@@ -69,9 +70,9 @@
 
 ### Konfigurasi Login Page Hotspot Untuk MAC Address Tertentu
 - Penjelasan  
-  ```Melewati login page hotspot mikrotik```
+  ```Konfigurasi login page untuk pengguna tertentu dengan MAC Address sebagai pengenal```
 - Kegunaan  
-  ```Konfigurasi ini berfungsi agar supaya pengguna tertentu tidak perlu login menggunakan 'username' dan 'password', dengan kata lain pengguna itu dapat langsung tersambung ke internet tanpa login.```
+  ```Konfigurasi ini berfungsi agar supaya pengguna tertentu tidak perlu login menggunakan 'username' dan 'password', atau mencegah pengguna untuk tersambung.```
 - Diperlukan
   - Konfigurasi DHCP Client
   - Konfigurasi Hotspot
