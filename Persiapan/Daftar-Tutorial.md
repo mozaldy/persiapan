@@ -16,20 +16,19 @@
 - [x] Konfigurasi VLAN
 - [x] Blok Ping IP Client Ke Router Pada Range IP Tertentu
 - [x] Konfigurasi Logging Untuk Semua Akses Ke Router
-- [ ] Konfigurasi Akses HTTP dan HTTPS dari Client Ke Internet
-- [ ] Konfigurasi AP
+- [x] Konfigurasi Akses HTTP dan HTTPS dari Client Ke Internet
+- [x] Konfigurasi AP
   - SSID
   - Password
-- [ ] Blok Akses Ke Situs Tertentu
-- [ ] Blok File Dengan Ekstensi Tertentu
-- [ ] Blok Content Yang Mengandung Kata Tertentu
-- [ ] Konfigurasi Firewall Dengan Akses Hanya Pada Jam Tertentu
-- [ ] Konfigurasi Hotspot
+- [x] Blok Akses Ke Situs Tertentu
+- [x] Blok File Dengan Ekstensi Tertentu
+- [x] Blok Content Yang Mengandung Kata Tertentu
+- [x] Konfigurasi Firewall Dengan Akses Hanya Pada Jam Tertentu
+- [x] Konfigurasi Hotspot
   - Domain
   - User
   - Password
   - Batas Pengguna
-  - Akses Tanpa Login Untuk Beberapa Mac Address
 - [ ] Konfigurasi VirtualBox Dengan Network Mode `Bridge Adapter`
 
 # Modul B

@@ -20,6 +20,13 @@
     - [Konfigurasi VLAN](#konfigurasi-vlan)
     - [Blok Ping IP Client Ke Router Pada Range IP Tertentu](#blok-ping-ip-client-ke-router-pada-range-ip-tertentu)
     - [Konfigurasi Logging Untuk Semua Akses Ke Router](#konfigurasi-logging-untuk-semua-akses-ke-router)
+    - [Konfigurasi Akses HTTP dan HTTPS dari Client Ke Internet](#konfigurasi-akses-http-dan-https-dari-client-ke-internet)
+    - [Konfigurasi AP](#konfigurasi-ap)
+    - [Blok Akses Ke Situs Tertentu](#blok-akses-ke-situs-tertentu)
+    - [Blok File Dengan Ekstensi Tertentu](#blok-file-dengan-ekstensi-tertentu)
+    - [Blok Content Yang Mengandung Kata Tertentu](#blok-content-yang-mengandung-kata-tertentu)
+    - [Konfigurasi Firewall Dengan Akses Hanya Pada Jam Tertentu](#konfigurasi-firewall-dengan-akses-hanya-pada-jam-tertentu)
+    - [Konfigurasi Hotspot](#konfigurasi-hotspot)
 - [Tambahan](#tambahan)
   - [Router (Mikrotik)](#router-mikrotik-1)
     - [Merubah Jumlah TTL (Time To Live)](#merubah-jumlah-ttl-time-to-live)
@@ -176,6 +183,225 @@
     - Action: `disk`
     - Penjelasan
       ```Semua proses sistem yang tercakup dalam kategori 'account' dan 'system' akan disimpan sebagai log dalam bentuk file di penyimpanan Router. File dapat ditemukan pada 'Files' dengan nama file 'log.x.txt'```
+
+### Konfigurasi Akses HTTP dan HTTPS dari Client Ke Internet
+- Diperlukan
+  - DHCP Server
+- Langkah-Langkah
+  - System -> Certificates -> +
+    - General
+      - Name: `NAMA SERTIFIKAT UTAMA, CONTOH: 'root-cert'`
+      - Common Name: `NAMA PENGENAL/UMUM, CONTOH: 'MyRouter'`
+      - Subject Alt. Name: `IP`
+      - Key Size: `2048`
+      - Days Valid: `365`
+    - Key Usage
+      - - [x] `key cert. sign`
+      - - [x] `crl sign`
+    - Apply (Tab Samping)
+    - Sign (Tab Samping)
+      - Certificate: `NAMA SERTIFIKAT YANG AKAN DIDAFTARKAN, CONTOH: 'root-cert'`
+      - Sign
+  - System -> Certificate -> +
+    - General
+      - Name: `NAMA SERTIFIKAT HTTPS, CONTOH: 'https-cert'`
+      - Common Name: `NAMA PENGENAL/UMUM, CONTOH: 'MyRouter'`
+      - Subject Alt. Name: `IP`
+      - Key Size: `2048`
+      - Days Valid: `365`
+    - Apply (Tab Samping)
+    - Sign (Tab Samping)
+      - Certificate: `NAMA SERTIFIKAT YANG AKAN DIDAFTARKAN, CONTOH: 'https-cert'`
+      - CA: `NAMA SERTIFIKAT UTAMA, CONTOH: 'root-cert'`
+      - Sign
+  - IP -> Services
+    - Double Click `www`
+      - Disable
+    - Double Click `www-ssl`
+      - Certificate: `SERTiFIKAT UMTUK HTTPS, CONTOH: 'https-cert'`
+      - Enable
+- Cek
+  ```Akses Router Mikrotik menggunakan web browser dengan cara memasukkan IP Address Mikrotik ke bar address browser, apabila pada bar address browser tersebut terdapat tulisan 'https' maka konfigurasi berhasil```
+
+### Konfigurasi AP
+- Penjelasan  
+  ```Konfigurasi AP (Access Point) pada Router Mikrotik```
+- Diperlukan
+  - DHCP Client
+  - Firewall (NAT)
+  - DNS
+- Langkah-Langkah
+  - Wireless
+    - Security Profiles -> + (Apabila Ingin Membuat AP Tanpa Password Lanjut Ke Langkah Selanjutnya)
+      - Name: `NAMA PASSWORD`
+      - Mode: `dynamic keys`
+      - Authentication Types
+        - - [x] `WPA PSK`
+        - - [x] `WPA2 PSK`
+      - Unicast Ciphers
+        - - [x] `aes ccm`
+      - Group Ciphers
+        - - [x] `aes ccm`
+      - WPA Pre-Shared Key: `PASSWORD YANG INGIN DIGUNAKAN`
+      - WPA2 Pre-Shared Key: `PASSWORD YANG INGIN DIGUNAKAN`
+    - Interfaces -> Double Click `INTERFACE WLAN, CONTOH: 'wlan1'`
+      - Wireless
+        - Mode: `ap bridge`
+        - SSID: `NAMA AP`
+        - Security Profile: `PASsWORD YANG INGIN DIGUNAKAN, DEFAULT JIKA TIDAK ADA PASSWORD`
+  - Konfigurasi [DHCP Server](#konfigurasi-dhcp-server)
+    - Interface: `INTERFACE WLAN, CONTOH: 'wlan1'`
+
+### Blok Akses Ke Situs Tertentu
+- Penjelasan  
+  ```Tolak akses ke situs web tertentu```
+- Diperlukan
+  - DHCP Client
+  - DHCP Server
+  - Firewall (NAT)
+  - DNS
+- Langkah-Langkah
+  - IP -> Web Proxy
+    - - [x] `Enabled`
+    - Src. Address: `0.0.0.0`
+    - Port: `8080`
+  - IP -> Firewall
+    - NAT -> +
+      - General
+        - Chain: `dstnat`
+        - Protocol: `tcp`
+        - Dst. Port: `80`
+      - Action
+        - Action: `redirect`
+        - To Ports: `8080`
+    - Filter Rules
+      - General
+        - Chain: `input`
+        - Protocol: `tcp`
+        - Dst. Address: `8080`
+        - In. Interface: `PORT DHCP CLIENT`
+      - Action
+        - Action: `drop`
+  - IP -> Web Proxy
+    - Access (Tab Samping) -> +
+      - Dst. Host: `SITUS YANG AKAN DIBLOKIR`
+      - Action: `deny`
+- Tambahan
+  - Blok Akses Ke Situs Dengan Port 80 dan 443 (HTTP dan HTTPS)
+    - IP -> Firewall
+      - Address Lists -> +
+        - Name: `NAMA GRUP YANG BERISIKAN DAFTAR SITUS YANG AKAN DIBLOKIR, CONTOH: 'BlockedWeb'`
+        - Address: `ALAMAT WEB YANG AKAN DIBLOKIR, CONTOH: 'github.com'`
+      - Filter Rules -> +
+        - General
+          - Chain: `forward`
+          - Protocol: `tcp`
+          - Dst. Port: `80, 443`
+        - Advanced
+          - Dst. Address List: `NAMA GRUP SITUS YANG DIBLOKIR`
+        - Action
+          - Action: `drop`
+
+### Blok File Dengan Ekstensi Tertentu
+- Penjelasan  
+  ```Konfigurasi untuk memblokir atau menolak file dengan ekstensi tertentu```
+- Kegunaan  
+  ```Membatasi pengguna agar tidak mengunduh file sembarangan dari internet```
+- Diperlukan
+  - DHCP Client
+  - DHCP Server
+  - Firewall (NAT)
+  - DNS
+  - Konfigurasi [Firewall Untuk Menolak Akses Situs](#blok-akses-ke-situs-tertentu)
+- Langkah-Langkah
+  - IP -> Web Proxy -> Access (Tab Samping) -> +
+    - Path: `EKSTENSI FILE YANG AKAN DIBLOKIR, CONTOH: '*.mp4, *.exe'`
+    - Action: `deny`
+
+### Blok Content Yang Mengandung Kata Tertentu
+- Penjelasan  
+  ```Menolak akses ke internet yang mengandung kata tertentu```
+- Kegunaan  
+  ```Mencegah pengguna untuk mengakses situs yang memiliki/mengandung kata tertentu yang telah ditentukan```
+- Diperlukan
+  - DHCP Server
+  - DHCP Client
+  - Firewall (NAT)
+  - DNS
+  - Konfigurasi [Firewall Untuk Menolak Akses Situs](#blok-akses-ke-situs-tertentu)
+- Langkah-Langkah
+  - IP -> Web Proxy -> Access (Tab Samping) -> +
+    - Dst. Host: `KATA YANG AKAN DITOLAK, CONTOH: ':game, :pedia'`
+    - Action: `deny`
+
+### Konfigurasi Firewall Dengan Akses Hanya Pada Jam Tertentu
+- Penjelasan  
+  ```Konfigurasi untuk menolak akses internet pada jam yang telah ditentukan```
+- Diperlukan
+  - DHCP Client
+  - DHCP Server
+  - Firewall (NAT)
+  - DNS
+- Langkah-Langkah
+  - IP -> Firewall
+    - Filter Rules -> +
+      - General
+        - Chain: `forward`
+      - Extra
+        - Time
+          - `KONFIGURASI DISESUAIKAN OLEH PENGGUNA`
+      - Action
+        - Action: `drop`
+
+### Konfigurasi Hotspot
+- Penjelasan  
+  ```Berisi beberapa konfigurasi pada halaman login hotspot mikrotik```
+- Dibutuhkan
+  - DHCP Client
+  - Firewall (NAT)
+  - DNS
+  - Sertifikat [HTTPS](#konfigurasi-akses-http-dan-https-dari-client-ke-internet)
+- Langkah-Langkah
+  - Membuat Hotspot
+    - IP -> Addresses -> +
+      - Address: `IP ADDRESS UNTUK HOTSPOT, CONTOH: '192.168.1.1/24'`
+      - Interface: `PORT INTERFACE YANG AKAN DIGUNAKAN UNTUK HOTSPOT`
+    - IP -> Hotspot
+      - Servers -> Hotspot Setup
+        - Hotspot Interface: `PORT INTERFACE HOTSPOT`
+        - Local Address of Network: `ALAMAT IP HOTSPOT`
+          - - [ ] `Masquerade Network`
+        - Address Pool of Network: `JARAK/RANGE IP YANG AKAN DIBERIKAN`
+        - Select Certificate: `none`
+        - IP Address of SMTP Server: `0.0.0.0`
+        - DNS Server: `SERVER DNS, DEFAULT: 'KOSONG'`
+        - DNS Name: `NAMA DOMAIN YANG INGIN DIGUNAKAN UNTUK MENGAKSES HALAMAN LOGIN HOTSPOT, DEFAULT: 'KOSONG'`
+  - Merubah Domain Hotspot
+    - IP -> DNS -> Static (Tab Samping) -> +
+      - Name: `NAMA DOMAIN YANG DIINGINKAN, CONTOH: 'siswatkj.org.id'`
+      - Address: `IP Address Hotspot, CONTOH: '192.168.1.1'`
+    - IP -> Hotspot
+      - Servers -> Double Click `HOTSPOT YANG DIBUAT PADA LANGKAH PERTAMA`
+        - Profile: `NAMA PROFILE SERVER YANG DIGUNAKAN HOTSPOT`
+      - Server Profiles -> Double Click `NAMA PROFILE SERVER YANG DIGUNAKAN HOTSPOT`
+        - General
+          - DNS Name: `NAMA DOMAIN YANG DITENTUKAN PADA TAHAP AWAL, CONTOH: 'siswatkj.org.id'`
+        - Login
+          - -[x] `HTTPS`
+          - SSL Certificate: `SERTIFIKAT HTTPS, CONTOH: 'https-cert'`
+  - Menambah User
+    - IP -> Hotspot
+      - Users -> +
+        - Server: `USER AKAN AKTIF DI SERVR YANG DIPILIH, DEFAULT: 'all'`
+        - Name: `USERNAME`
+        - Password: `PASSWORD`
+        - Profile: `default`
+  - Membatasi User
+    - IP -> Hotspot
+      - Users -> Double Click `USER YANG AKAN DIBATASI`
+        - Profile: `PROFIL YANG DIGUNAKAN USER`
+      - User Profiles -> Double Click `PROFIL YANG DIGUNAKAN USER`
+        - Shared Users: `JUMLAH PERANGKAT YANG DAPAT MENGGUNAKAN USER INI`
 # Tambahan
 ## Router (Mikrotik)
 ### Merubah Jumlah TTL (Time To Live)
