@@ -9,14 +9,173 @@
 
 # Daftar Isi
 - [Daftar Isi](#daftar-isi)
-- [Tambahan](#tambahan)
+- [Modul A](#modul-a)
   - [Router (Mikrotik)](#router-mikrotik)
+    - [Konfigurasi DHCP Client](#konfigurasi-dhcp-client)
+    - [Konfigurasi DHCP Server](#konfigurasi-dhcp-server)
+    - [Konfigurasi Firewall (NAT)](#konfigurasi-firewall-nat)
+    - [Konfigurasi DHCP Pool](#konfigurasi-dhcp-pool)
+    - [Konfigurasi DNS](#konfigurasi-dns)
+    - [Konfigurasi NTP](#konfigurasi-ntp)
+    - [Konfigurasi VLAN](#konfigurasi-vlan)
+    - [Blok Ping IP Client Ke Router Pada Range IP Tertentu](#blok-ping-ip-client-ke-router-pada-range-ip-tertentu)
+    - [Konfigurasi Logging Untuk Semua Akses Ke Router](#konfigurasi-logging-untuk-semua-akses-ke-router)
+- [Tambahan](#tambahan)
+  - [Router (Mikrotik)](#router-mikrotik-1)
     - [Merubah Jumlah TTL (Time To Live)](#merubah-jumlah-ttl-time-to-live)
     - [Menggunakan WLAN Sebagai DHCP Client](#menggunakan-wlan-sebagai-dhcp-client)
     - [Konfigurasi Login Page Hotspot Untuk MAC Address Tertentu](#konfigurasi-login-page-hotspot-untuk-mac-address-tertentu)
 
 
 ---
+# Modul A
+## Router (Mikrotik)
+### Konfigurasi DHCP Client
+- Penjelasan  
+  ```Menggunakan Mikrotik sebagai DHCP Client agar dapat mendistribusikan koneksi internet dari ISP.```
+- Langkah-Langkah
+  - IP -> DHCP Client -> +
+    - Interface: `PORT INTERFACE YANG HENDAK DIGUNAKAN`
+    - - [x] Use Peer DNS --> `MIKROTIK AKAN MENGGUNAKAN KONFIGURASI DNS DARI PUSAT`
+    - - [x] Use Peer NTP --> `MIKROTIK AKAN MENGGUNAKAN KONFIGURASI NTP DARI PUSAT`
+    - Add Default Route: `yes`
+    - Default Route Distance: `1`
+
+### Konfigurasi DHCP Server
+- Penjelasan  
+  ```Menggunakan Mikrotik sebagai DHCP Server untuk mendistribusikan koneksi internet dari DHCP Client.```
+- Langkah-Langkah
+  - IP -> Addresses -> +
+    - Address: `IP NETWORK YANG AKAN DIGUNAKAN, CONTOH: '192.168.1.1/24'`
+    - Interface: `PORT YANG AKAN DIGUNAKAN SEBAGAI DHCP SERVER`
+  - IP -> DHCP Server -> DHCP Setup
+    - DHCP Server Interface: `PORT YANG AKAN DIGUNAKAN SEBAGAI DHCP SERVER`
+    - DHCP Address Space: `SESUAI DENGAN KONFIGURASI NETWORK ADDRESS PADA PORT INTERFACE`
+    - Gateway for DHCP Network: `SESUAI DENGAN KONFIGURASI ADDRESS PADA PORT INTERFACE`
+    - Addresses to Give Out: `RANGE ADDRESS YANG AKAN DIBERIKAN/DIDISTRIBUSIKAN`
+    - DNS Server: `DNS YANG DIBERIKAN OLEH SERVER/PUSAT, DEFAULT: KOSONG`
+    - Lease Time: `BERAPA LAMA IP AKAN DIPINJAMKAN KEPADA PERANGKAT PENGGUNA`
+
+### Konfigurasi Firewall (NAT)
+- Penjelasan  
+  ```Konfigurasi ini digunakan agar jaringan LAN dapat mengakses internet.```
+- Langkah-Langkah
+  - IP -> Firewall -> NAT -> +
+    - Chain: `srcnat`
+    - Out. Interface: `PORT INTERFACE DHCP CLIENT`
+    - Action
+      - Action: `masquerade`
+
+### Konfigurasi DHCP Pool
+- Penjelasan  
+  ```DHCP Pool adalah jarak/range IP yang akan digunakan dalam DHCP Server.```
+- Diperlukan
+  - DHCP Server
+- Langkah-Langkah
+  - IP -> DHCP Server -> Double Click `PORT INTERFACE YANG DIGUNAKAN`
+    - Address Pool: `DHCP POOL YANG DIGUNAKAN`
+  - IP -> Pool
+    - Double Click `DHCP POOL YANG DIGUNAKAN ATAU HENDAK DIRUBAH`
+      - Addresses: `RENTANG IP YANG AKAN DIGUNAKAN, CONTOH: '192.168.1.2-192.168.1.254'`
+
+### Konfigurasi DNS
+- Penjelasan  
+  ```Digunakan agar Mikrotik dapat mengartikan nama domain ke bentuk IP.```
+- Diperlukan
+  - DHCP Client
+- Langkah-Langkah
+  - IP -> DNS
+    - Servers: `SERVER DNS YANG HENDAK DIGUNAKAN`
+    - - [x] Allow Remote Requests
+    - 5 Daftar Server DNS
+      - Cloudflare
+        - Primer: `1.1.1.1`
+        - Sekunder: `1.0.0.1`
+      - Public DNS Google
+        - Primer: `8.8.8.8`
+        - Sekunder: `8.8.4.4`
+      - OpenDNS
+        - Primer: `208.67.222.222`
+        - Sekunder: `208.67.220.220`
+      - Norton ConnectSafe
+        - Primer: `199.85.126.10`
+        - Sekunder: `199.85.127.10`
+      - Comodo Secure DNS
+        - Primer: `8.26.56.26`
+        - Sekunder: `8.20.247.20`
+
+### Konfigurasi NTP
+- Penjelasan  
+  ```Digunakan agar Mikrotik dapat melakukan sinkronisasi zona waktu dengan server NTP (Network Time Protocol).```
+- Kegunaan  
+  ```Mikrotik akan memiliki waktu yang sesuai.```
+- Diperlukan
+  - DHCP Client
+- Langkah-Langkah
+  - System -> SNTP Client
+    - - [x] Enabled
+    - Primary NTP Server: `SERVER NTP PRIMER`
+    - Secondary NTP Server: `SERVER NTP SEKUNDER`
+    - Daftar Server NTP Indonesia
+      - 0.id.pool.ntp.org: `203.114.74.17`
+      - 1.id.pool.ntp.org: `162.159.200.1`
+      - 2.id.pool.ntp.org: `203.114.224.31`
+      - 3.id.pool.ntp.org: `202.162.32.12`
+
+### Konfigurasi VLAN
+- Penjelasan  
+  ```Virtual LAN atau disingkat VLAN merupakan fitur yang dibuat dengan menggunakan jaringan pihak ketiga. Dengan VLan ini kita dapat mengkonfigurasikan beberapa perangkat pada satu LAN atau lebih agar dapat saling berkomunikasi seperti halnya bila perangkat tersebut terhubung langsung pada jalur yang sama, padahal sebenarnya perangkat tersebut berada dalam segmen jaringan LAN yang berbeda.```
+- Diperlukan
+  - 2 Buah Router Mikrotik
+- Langkah-Langkah
+  - Router 1
+    - Interfaces -> VLAN -> +
+      - Name: `NAMA VLAN`
+      - VLAN ID: `ID VLAN, CONTOH: '10'`
+      - Interface: `PORT INTERFACE YANG AKAN DIGUNAKAN UNTUK MENDISTRIBUSIKAN VLAN`
+    - IP -> Addresses -> +
+      - Konfigurasi Sama Dengan [DHCP Server](#konfigurasi-dhcp-server)
+      - Interface: `PORT INTERFACE VLAN YANG AKAN DIGUNAKAN, CONTOH: 'vlan1'`
+  - Router 2
+    - Interfaces -> Interface -> Double Click `PORT YANG AKAN MENDISTRIBUSIKAN NETWORK DARI VLAN`
+      - General
+        - Master Port: `PORT YANG TERSAMBUNG DENGAN VLAN`
+    - Switch -> Port
+      - Double Click `PORT YANG TERSAMBUNG DENGAN VLAN`
+        - VLAN Mode: `secure`
+        - VLAN Header: `add if missing`
+      - Double Click `PORT YANG AKAN MENDISTRIBUSIKAN NETWORK DARI VLAN`
+        - VLAN Mode: `secure`
+        - VLAN Header: `always strip`
+        - Default VLAN ID: `VLAN ID DARI ROUTER 1, CONTOH: '10'`
+    - Switch -> VLAN -> +
+      - VLAN ID: `VLAN ID DARI ROUTER 1`
+      - Ports: `PORT-PORT YANG DIGUNAKAN, CONTOH: 'ether1 dan ether2'`
+        - Penjelasan  
+        ```ether1 berfungsi sebagai trunk atau master port yang mengirimkan VLAN dari Router 1, sedangkan ether2 bertindak sebagai penerima Network dari ether1 dengan ID VLAN yang ditentukan pengguna untuk kemudian didistribusikan ke perangkat client```
+
+### Blok Ping IP Client Ke Router Pada Range IP Tertentu
+- Penjelasan  
+  ```Melakukan drop atau menolak koneksi dari IP atau range IP tertentu```
+- Langkah-Langkah
+  - IP -> Firewall -> Filter Rules -> +
+    - General
+      - Chain: `forward`
+      - Dst. Address: `IP ATAU RANGE IP YANG AKAN DITOLAK KONEKSINYA, CONTOH: '192.168.1.10-192.168.1.50'`
+    - Action
+      - Action: `drop`
+
+### Konfigurasi Logging Untuk Semua Akses Ke Router
+- Penjelasan  
+  ```Logging ditujukan agar supaya admin dapat mengetahui proses, status, warning, dan error apa saja yang terjadi pada perangkat```
+- Kegunaan  
+  ```Digunakan untuk mengetahui riwayat akses pengguna ke Router```
+- Langkah-Langkah
+  - System -> Logging -> Rules -> +
+    - Topics: `account`, dan `system`
+    - Action: `disk`
+    - Penjelasan
+      ```Semua proses sistem yang tercakup dalam kategori 'account' dan 'system' akan disimpan sebagai log dalam bentuk file di penyimpanan Router. File dapat ditemukan pada 'Files' dengan nama file 'log.x.txt'```
 # Tambahan
 ## Router (Mikrotik)
 ### Merubah Jumlah TTL (Time To Live)
