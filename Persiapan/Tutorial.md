@@ -17,6 +17,8 @@
     - [Konfigurasi DHCP Pool](#konfigurasi-dhcp-pool)
     - [Konfigurasi DNS](#konfigurasi-dns)
     - [Konfigurasi NTP](#konfigurasi-ntp)
+    - [Static Routing](#static-routing)
+    - [Dynamic Routing (OSPF)](#dynamic-routing-ospf)
     - [Konfigurasi VLAN](#konfigurasi-vlan)
     - [Blok Ping IP Client Ke Router Pada Range IP Tertentu](#blok-ping-ip-client-ke-router-pada-range-ip-tertentu)
     - [Konfigurasi Logging Untuk Semua Akses Ke Router](#konfigurasi-logging-untuk-semua-akses-ke-router)
@@ -129,6 +131,25 @@
       - 2.id.pool.ntp.org: `203.114.224.31`
       - 3.id.pool.ntp.org: `202.162.32.12`
 
+### Static Routing
+- Penjelasan 
+  ```Static Routing atau Routing Statik adalah salah satu cara routing dimana si administrator jaringan mensetting router mereka dengan cara yang manual. Dalam sebuah jaringan yang murni statik routing berarti si administrator jaringan mengisi semua forwarding table di setiap router secara manual. Biasa nya metode static routing ini digunakan pada sebuah jaringan yang berskala kecil, karena jika metode ini di gunakaLn pada jaringan berskala besar akan repot juga mengisi semua forwarding table di setiap router yang banyak itu. Untuk konfigurasi sederhananya bisa dilihat pada tutorial dibawah ini.```
+- Kegunaan
+  ```Memakan lebih sedikit resources pada mikrotik dibandingkan dengan Dynamic Routing```
+- Diperlukan
+  - 2 Mikrotik Router
+- Langkah-langkah
+  - Tambahkan IP Address 
+    - IP -> Address -> tambahkan ip address sesuai kebutuhan pada masing masing port router
+  - Mengatur tabel routes
+    - IP -> Routes -> tambahkan tabel routes baru (+) pada router satu dan dua
+      - Dst Address adalah ip network tujuan yang akan dihubungkan
+      - Gateway adalah jalan masuk (gerbang) untuk menuju ke tujuan (dst address)
+    - Pastikan setelah konfigurasi diatas ip table tertulis reachable yang menandakan bahwa tersambung
+    - Langkah terakhir cek menggunakan terminal atau cmd ping ip tujuan apabila muncul reply diikuti nilai ms maka setting telah berhasil.
+  
+### Dynamic Routing (OSPF)
+  
 ### Konfigurasi VLAN
 - Penjelasan  
   ```Virtual LAN atau disingkat VLAN merupakan fitur yang dibuat dengan menggunakan jaringan pihak ketiga. Dengan VLan ini kita dapat mengkonfigurasikan beberapa perangkat pada satu LAN atau lebih agar dapat saling berkomunikasi seperti halnya bila perangkat tersebut terhubung langsung pada jalur yang sama, padahal sebenarnya perangkat tersebut berada dalam segmen jaringan LAN yang berbeda.```
