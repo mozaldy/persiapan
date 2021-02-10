@@ -137,8 +137,8 @@
 - Kegunaan
   ```Memakan lebih sedikit resources pada mikrotik dibandingkan dengan Dynamic Routing```
 - Diperlukan
-  - 2 Mikrotik Router
-- Langkah-langkah
+  - 2 Mikrotik Router atau lebih
+- Langkah - langkah
   - Tambahkan IP Address 
     - IP -> Address -> tambahkan ip address sesuai kebutuhan pada masing masing port router
   - Mengatur tabel routes
@@ -149,7 +149,23 @@
     - Langkah terakhir cek menggunakan terminal atau cmd ping ip tujuan apabila muncul reply diikuti nilai ms maka setting telah berhasil.
   
 ### Dynamic Routing (OSPF)
+- Penjelasan 
+  ```Open Shortest Path First (OSPF) adalah sebuah protokol routing otomatis (Dynamic Routing) yang mampu menjaga, mengatur dan mendistribusikan informasi routing antar network mengikuti setiap perubahan jaringan secara dinamis. Pada OSPF dikenal sebuah istilah Autonomus System (AS) yaitu sebuah gabungan dari beberapa jaringan yang sifatnya routing dan memiliki kesamaan metode serta policy pengaturan network, yang semuanya dapat dikendalikan oleh network administrator. Dan memang kebanyakan fitur ini diguakan untuk management dalam skala jaringan yang sangat besar. Oleh karena itu untuk mempermudah penambahan informasi routing dan meminimalisir kesalahan distribusi informasi routing, maka OSPF bisa menjadi sebuah solusi.```
   
+- Diperlukan
+  - 2 Mikrotik Router atau lebih
+- Manfaat
+  - Memudahkan administrator jaringan dalam menkonfigurasi karena tidak harus manual seperti Static Routing
+- Kekurangan
+  - Lebih memakan resources mikrotik karena jalur yang dipilih akan dibebankan kepada CPU mikrotik
+  
+- Konfigurasi dasar OSPF
+  - Tambahkan IP Address 
+    - IP -> Address -> tambahkan ip address sesuai kebutuhan pada masing masing port router
+  - Konfigurasi OSPF
+    - Routing -> OSPF
+    - Klik pada tab network, lalu tambahkan ip network yang berada di sekitar router
+  - Setelah itu cek pada route list, apabila ip network yang telah ditulis sebelumnya sudah terdaftar dan reachable menandakan konfigurasi telah berhadil.
 ### Konfigurasi VLAN
 - Penjelasan  
   ```Virtual LAN atau disingkat VLAN merupakan fitur yang dibuat dengan menggunakan jaringan pihak ketiga. Dengan VLan ini kita dapat mengkonfigurasikan beberapa perangkat pada satu LAN atau lebih agar dapat saling berkomunikasi seperti halnya bila perangkat tersebut terhubung langsung pada jalur yang sama, padahal sebenarnya perangkat tersebut berada dalam segmen jaringan LAN yang berbeda.```
