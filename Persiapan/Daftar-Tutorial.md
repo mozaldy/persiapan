@@ -14,7 +14,7 @@
 - [x] Konfigurasi DNS
 - [x] Konfigurasi NTP
 - [x] Static Routing
-- [ ] Dynamic Routing (OSPF)
+- [x] Dynamic Routing (OSPF)
 - [x] Konfigurasi VLAN
 - [x] Blok Ping IP Client Ke Router Pada Range IP Tertentu
 - [x] Konfigurasi Logging Untuk Semua Akses Ke Router
