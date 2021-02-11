@@ -37,21 +37,18 @@
 ## Laptop
 - [ ] Konfigurasi OS (Linux)
 - [ ] Konfigurasi Repo (Lokal)
-- [ ] Konfigurasi DNS Server
+- [x] Membuat Sertifikat SSL (HTTPS)
+- [x] Konfigurasi Web Server
+- [x] Konfigurasi Web Server Dengan Sertifikat SSL (HTTPS)
+- [ ] Konfigurasi Mail Server
+- [x] Konfigurasi FTP Server
+- [x] Konfigurasi Samba
+- [x] Konfigurasi DNS
   - Domain
   - Sub-Domain
-- [ ] Konfigurasi Web Server
-  - Apache
-  - Document Root
-  - Database
-  - Membuat File HTML Untuk Menampilan Biodata
-- [ ] Konfigurasi Mail Server
-  - User/Database
-- [ ] Konfigurasi SSH Server
+- [x] Konfigurasi SSH Server
   - Disable Root Login
   - Setting Port
-- [ ] Konfigurasi FTP Server
-  - User/Database
 
 # Modul C
 ## Cisco Packet Tracer
@@ -63,3 +60,5 @@
 - [x] Merubah Jumlah TTL (Time To Live)
 - [x] Menggunakan WLAN Sebagai DHCP Client
 - [x] Konfigurasi Login Page Hotspot Untuk MAC Address Tertentu
+- [ ] Membuat Repository Debian
+- [ ] Melihat Daftar Port

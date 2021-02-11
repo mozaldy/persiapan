@@ -28,11 +28,22 @@
     - [Blok Content Yang Mengandung Kata Tertentu](#blok-content-yang-mengandung-kata-tertentu)
     - [Konfigurasi Firewall Dengan Akses Hanya Pada Jam Tertentu](#konfigurasi-firewall-dengan-akses-hanya-pada-jam-tertentu)
     - [Konfigurasi Hotspot](#konfigurasi-hotspot)
+- [Modul B](#modul-b)
+  - [Laptop (Debian)](#laptop-debian)
+    - [Membuat Sertifikat SSL (HTTPS)](#membuat-sertifikat-ssl-https)
+    - [Konfigurasi Web Server](#konfigurasi-web-server)
+    - [Konfigurasi Web Server Dengan Sertifikat SSL (HTTPS)](#konfigurasi-web-server-dengan-sertifikat-ssl-https)
+    - [Konfigurasi FTP Server](#konfigurasi-ftp-server)
+    - [Konfigurasi Samba](#konfigurasi-samba)
+    - [Konfigurasi DNS](#konfigurasi-dns-1)
+    - [Konfigurasi SSH](#konfigurasi-ssh)
 - [Tambahan](#tambahan)
   - [Router (Mikrotik)](#router-mikrotik-1)
     - [Merubah Jumlah TTL (Time To Live)](#merubah-jumlah-ttl-time-to-live)
     - [Menggunakan WLAN Sebagai DHCP Client](#menggunakan-wlan-sebagai-dhcp-client)
     - [Konfigurasi Login Page Hotspot Untuk MAC Address Tertentu](#konfigurasi-login-page-hotspot-untuk-mac-address-tertentu)
+    - [Melihat Daftar Port](#melihat-daftar-port)
+    - [Ketentuan Port](#ketentuan-port)
 
 
 ---
@@ -438,6 +449,246 @@
         - Profile: `PROFIL YANG DIGUNAKAN USER`
       - User Profiles -> Double Click `PROFIL YANG DIGUNAKAN USER`
         - Shared Users: `JUMLAH PERANGKAT YANG DAPAT MENGGUNAKAN USER INI`
+
+# Modul B
+## Laptop (Debian)
+### Membuat Sertifikat SSL (HTTPS)
+- Penjelasan  
+  ```Sertifikat SSL adalah sertifikat yang dibuat oleh CA (Certificate Authority) untuk mengamankan Transfer data antara Webserver dan Browser```
+- Langkah-Langkah
+  - `sudo apt install openssl`
+  - `sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/ssl-selfsigned.key -out /etc/ssl/certs/ssl-selfsigned.crt`
+    - Country Name: `KODE NEGARA`
+    - State or Province Name: `NEGARA`
+    - Locality Name: `KOTA`
+    - Organization Name: `NAMA ORGANISASI`
+    - Organization Unit Name: `UNIT ORGANISASI`
+    - Common Name: `DOMAIN WEB (PENTING KARENA HARUS SAMA DENGAN KONFIGURASI APACHE)`
+    - Email Address: `ALAMAT EMAIL`
+
+
+### Konfigurasi Web Server
+- Penjelasan  
+  ```Server atau Web server adalah sebuah software yang memberikan layanan berbasis data dan berfungsi menerima permintaan dari HTTP atau HTTPS pada klien yang dikenal dan biasanya kita kenal dengan nama web browser (Mozilla Firefox, Google Chrome) dan untuk mengirimkan kembali yang hasilnya dalam bentuk beberapa halaman web dan pada umumnya akan berbentuk dokumen HTML.```
+- Langkah-Langkah
+  - `sudo apt install apache2`
+  - `sudo cp /etc/apache2/sites-available/000-default.conf /etc/apache2/aquabellus.conf`
+  - `sudo nano /etc/apache2/sites-available/aquabellus.conf`
+    - Rubah atau Tambah:
+      - ```
+        <VirtualHost *:80>
+          ServerName aquabellus.org
+          ServerAdmin webmaster@aquabellus.org
+          DocumentRoot /var/www/html/aquabellus
+          ErrorLog ${APACHE_LOG_DIR}/error.log
+          CustomLog ${APACHE_LOG_DIR}/access.log combined
+        </VirtualHost>
+        ```
+  - `sudo mkdir -p /var/www/html/aquabellus`
+  - `sudo touch /var/www/html/aquabellus/index.html`
+  - `sudo nano /var/www/html/aquabellus/index.html`
+    - ```
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Aquabellus</title>
+      </head>
+      <body>
+        <div align=center>
+          </p>I Don't Know, It's Just Work</p>
+        </div>
+      </body>
+      ```
+  - `sudo a2ensite aquabellus.conf`
+  - `sudo a2dissite 000-default.conf`
+  - `sudo systemctl apache2 restart`
+
+### Konfigurasi Web Server Dengan Sertifikat SSL (HTTPS)
+- Diperlukan
+  - [Sertifikat SSL (HTTPS)](#membuat-sertifikat-ssl-https)
+- Langkah-Langkah
+  - `sudo apt install ufw`
+  - `sudo ufw allow "Apache Full"`
+  - `sudo a2enmod ssl`
+  - `sudo systemctl apache2 restart`
+  - `sudo nano /etc/apache2/sites-available/aquabellus.conf`
+    - ```
+      <VirtualHost *:443>
+        ServerName aquabellus.org
+        ServerAdmin webmaster@aquabellus.org
+        DocumentRoot /var/www/html/aquabellus
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+        SSLEngine on
+        SSLCertificateFile /etc/ssl/certs/ssl-selfsigned.crt
+        SSLCertificateKeyFile /etc/ssl/certs/ssl-selfsigned.key
+      </VirtualHost>
+
+      <VirtualHost *:80>
+        ServerName aquabellus.org
+        Redirect / https://aquabellus.org
+      </VirtualHost>
+      ```
+
+### Konfigurasi FTP Server
+- Penjelasan  
+  ```File Transfer Protocol (FTP) adalah protokol jaringan standar yang digunakan untuk mentransfer file antara client dan server melalui jaringan komputer. Ada beberapa aplikasi FTP server yang tersedia untuk Linux, yaitu PureFTPd, ProFTPd, dan vsftpd.```
+- Langkah-Langkah
+  - vsftpd
+    - Konfigurasi Dasar
+      - `sudo apt install vsftpd`
+      - `sudo nano /etc/vsftpd.conf`
+        - Rubah atau Tambahkan:
+          - `write_enable=YES`
+      - `sudo systemctl restart vsftpd`
+    - Membatasi Folder Root (/) Tiap Pengguna
+      - `sudo nano /etc/vsftpd.conf`
+        - Rubah atau Tambah:
+          - `chroot_local_user=YES`
+          - `allow_writeable_chroot=YES`
+      - `sudo systemctl restart vsftpd`
+    - Mengganti Root (/) Directory Tiap Pengguna
+      - `sudo nano /etc/vsftpd.conf`
+        - Rubah atau Tambah:
+          - `user_sub_token=$USER`
+          - `local_root=/home/$USER`
+        - `sudo mkdir -p /home/$USER`
+        - `sudo chown -R $USER:$USER /home/$USER`
+        - `sudo chmod -R 755 /home/$USER`
+        - `sudo systemctl restart vsftpd`
+    - Mode Pasif (FTP Akan Menggunakan Port Berdasar Dengan Batas Minimum dan Maximum)
+      - `sudo nano /etc/vsftpd.conf`
+        - Rubah atau Tambah:
+          - `pasv_enable=YES`
+          - `pasv_min_port=10090`
+          - `pasv_max_port=10100`
+      - `sudo systemctl restart vsftpd`
+    - FTP Over TLS
+      - Membutuhkan
+        - Sertifikat SSL (HTTPS)
+      - `sudo nano /etc/vsftpd.conf`
+        - Rubah atau Tambah:
+          - `rsa_cert_file=/etc/ssl/certs/CERT_FILE`
+          - `rsa_private_key_file=/etc/ssl/private/CERT_KEY_FILE`
+          - `ssl_enable=YES`
+          - `ssl_ciphers=HIGH`
+          - `ssl_tlsv1=YES`
+          - `ssl_sslv2=NO`
+          - `ssl_sslv3=NO`
+          - `force_local_data_ssl=YES`
+          - `force_local_logins_ssl=YES`
+          - `require_ssl_reuse=NO`
+      - `sudo systemctl restart vsftpd`
+
+### Konfigurasi Samba
+- Penjelasan  
+  ```Samba adalah program yang dapat menjembatani kompleksitas berbagai platform sistem operasi linux (berbasis text) dengan sistem windows yang dijalankan dalam suatu jaringan komputer pribadi milik kamu```
+- Kegunaan  
+  ```Fungsi samba adalah menghubungkan antara mesin linux dengan mesin windows dan sebagai perangkat lunak yang memiliki banyak fungsi dan dapat dilakukan oleh samba software dari mulai sharing file,sharing device,PDC,firewall,DNS,DHCP,FTP,Webserver,sebagai gateway,mail server,dan proxy```
+- Langkah-Langkah
+  - `sudo apt install samba`
+  - `sudo mkdir /home/share`
+  - `sudo chmod 777 /home/share`
+  - `sudo nano /etc/samba/smb.conf`
+    - Rubah atau Tambah:
+    - ```
+      [SHARE_DIR]
+      path = /home/share
+      browseable = yes
+      public = no
+      guest ok = no
+      read only = no
+      writeable = yes
+      security = user  
+      ```
+  - `sudo adduser aquabellus`
+  - `sudo smbpasswd -a 03092002`
+  - `sudo systemctl smbd restart`
+- Cek  
+  ```Cek dengan cara memasukkan '\\IP_ADDRESS_SAMBA pada bar address Microsoft Explorer'```
+
+### Konfigurasi DNS
+- Diperlukan
+  - Konfigurasi [Web Server](#konfigurasi-web-server) atau [Web Server Dengan SSL](#konfigurasi-web-server-dengan-sertifikat-ssl-https)
+- Penjelasan  
+  ```DNS (Domain Name Server) merupakan salah satu solusi dari permasalahan Jaringan dimana jika kita mengakses suatu server dengan menggunakan alamat ip maka akan jauh lebih sulit karena kita harus mengingatnya berbeda jika kita memberikan sebuah nama (domain) maka akan lebih mudah```
+- Langkah-Langkah
+  - `sudo apt install bind9`
+  - `sudo cp /etc/bind/db.local /etc/bind/db.domain`
+  - `sudo cp /etc/bind/db.127 /etc/bind/db.ip`
+  - `sudo nano /etc/bind/db.domain`
+    - ```
+          ;
+          ; BIND data file for local loopback interface
+          ;
+          $TTL    604800
+          @       IN      SOA     aquabellus.org. root.aquabellus.org. (
+                                        2         ; Serial
+                                   604800         ; Refresh
+                                    86400         ; Retry
+                                  2419200         ; Expire
+                                   604800 )       ; Negative Cache TTL
+          ;
+          @       IN      NS      aquabellus.org.
+          @       IN      A       172.27.155.214
+          www     IN      A       172.27.155.214
+          blog    IN      CNAME   www
+      ```
+    - jika server subdomain sama dengan salah satu alamat server yang dituju maka anda bisa gunakana CNAME (canonical name)
+  - `sudo nano /etc/bind/db.ip`
+    - ```
+        ;
+        ; BIND reverse data file for local loopback interface
+        ;
+        $TTL    604800
+        @       IN      SOA     aquabellus.org. root.aquabellus.org. (
+                                      1         ; Serial
+                                 604800         ; Refresh
+                                  86400         ; Retry
+                                2419200         ; Expire
+                                 604800 )       ; Negative Cache TTL
+        ;
+        @        IN      NS      aquabellus.org.
+        214      IN      PTR     aquabellus.org.
+      ```
+    - `214` adalah ekor dari 172.27.155.214
+  - `sudo nano /etc/bind/named.conf.local`
+    - ```
+        zone "aquabellus.org"{
+          type master;
+          file "/etc/bind/db.domain";
+        };
+
+        zone "155.27.172.in-addr.arpa"{
+          type master;
+          file "/etc/bind/db.ip";
+        };
+      ```
+  - `sudo nano /etc/bind/named.conf.options`
+    - Rubah atau Tambah:
+      - ```
+        forwarders {
+              1.1.1.1;
+        };
+        ```
+  - `sudo nano /etc/resolv.conf`
+    - Rubah atau Tambah:
+      - `nameserver 172.27.155.214`
+  - `sudo systemctl bind9 restart`
+- Cek 
+  ```Install paket dnsutils 'sudo apt install dnsutils', kemudian jalankan perintah 'nslookup IP_ADDRESS' dan 'nslookup DOMAIN_ADDRESS'```
+
+### Konfigurasi SSH
+- Penjelasan  
+  ```Secure Shell (SSH) adalah protokol internet untuk remote komputer (server) yang dapat menjalankan perintah berbasis command line interface (CLI). Pada umumnya server yang mengaktifkan SSH server adalah server dengan sistem operasi keluarga Unix/Unix Like (Linux, BSD). Aplikasi SSH server yang digunakan adalah OpenSSH yang terlahir dari tangan-tangan developer OpenBSD Project.```
+- Langkah-Langkah
+  - `sudo apt install openssh-server openssh-client`
+  - Merubah Port Default SSH
+    - `sudo nano /etc/ssh/sshd_config`
+      - Rubah atau Tambah:
+        - Lihat [Ketentuan SSH](#ketentuan-port)
+        - `Port PORT_SSH`
+
 # Tambahan
 ## Router (Mikrotik)
 ### Merubah Jumlah TTL (Time To Live)
@@ -515,3 +766,14 @@
         - `regular`: `PENGGUNA PERLU LOGIN DENGAN USERNAME DAN PASSWORD UNTUK TERSAMBUNG KE JARINGAN INTERNET`
         - `bypassed`: `PENGGUNA AKAN LANGSUNG TERSAMBUNG JARINGAN INTERNET`
         - `blocked`: `PENGGUNA TIDAK AKAN DAPAT TERSAMBUNG KE JARINGAN INTERNET`
+
+### Melihat Daftar Port
+- Penjelasan  
+  ```Perintah linux untuk melihat daftar port yang digunakan```
+- Langkah-Langkah
+  - `sudo netstat -tulpn`
+
+### Ketentuan Port
+- Ports 0-1023 = system or well-known ports.
+- Ports 1024-49151 = user or registered ports.
+- Ports 49152-65535 = dynamic / private ports
