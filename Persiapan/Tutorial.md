@@ -150,7 +150,7 @@
   - 2 Mikrotik Router atau lebih
 - Langkah - langkah
   - Tambahkan IP Address 
-    - IP -> Address -> tambahkan ip address sesuai kebutuhan pada masing masing port router
+    - IP -> Address -> tambahkan ip address sesuai kebutuhan pada masing-masing port router
   - Mengatur tabel routes
     - IP -> Routes -> tambahkan tabel routes baru (+) pada router satu dan dua
       - Dst Address adalah ip network tujuan yang akan dihubungkan
@@ -171,7 +171,7 @@
   
 - Konfigurasi dasar OSPF
   - Tambahkan IP Address 
-    - IP -> Address -> tambahkan ip address sesuai kebutuhan pada masing masing port router
+    - IP -> Address -> tambahkan ip address sesuai kebutuhan pada masing-masing port router
   - Konfigurasi OSPF
     - Routing -> OSPF
     - Klik pada tab network, lalu tambahkan ip network yang berada di sekitar router
@@ -495,7 +495,7 @@
       </head>
       <body>
         <div align=center>
-          </p>I Don't Know, It's Just Work</p>
+          </p>Ow Hi, Is It Work?</p>
         </div>
       </body>
       ```
@@ -556,7 +556,7 @@
         - `sudo chown -R $USER:$USER /home/$USER`
         - `sudo chmod -R 755 /home/$USER`
         - `sudo systemctl restart vsftpd`
-    - Mode Pasif (FTP Akan Menggunakan Port Berdasar Dengan Batas Minimum dan Maximum)
+    - Mode Pasif (FTP Akan Menggunakan Port Berdasar Dengan Batas Terendah dan Tertinggi)
       - `sudo nano /etc/vsftpd.conf`
         - Rubah atau Tambah:
           - `pasv_enable=YES`
