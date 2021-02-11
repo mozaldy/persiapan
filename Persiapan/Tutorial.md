@@ -521,7 +521,7 @@
         CustomLog ${APACHE_LOG_DIR}/access.log combined
         SSLEngine on
         SSLCertificateFile /etc/ssl/certs/ssl-selfsigned.crt
-        SSLCertificateKeyFile /etc/ssl/certs/ssl-selfsigned.key
+        SSLCertificateKeyFile /etc/ssl/private/ssl-selfsigned.key
       </VirtualHost>
 
       <VirtualHost *:80>
@@ -568,8 +568,8 @@
         - Sertifikat SSL (HTTPS)
       - `sudo nano /etc/vsftpd.conf`
         - Rubah atau Tambah:
-          - `rsa_cert_file=/etc/ssl/certs/CERT_FILE`
-          - `rsa_private_key_file=/etc/ssl/private/CERT_KEY_FILE`
+          - `rsa_cert_file=/etc/ssl/certs/ssl-selfsigned.crt`
+          - `rsa_private_key_file=/etc/ssl/private/ssl-selfsigned.key`
           - `ssl_enable=YES`
           - `ssl_ciphers=HIGH`
           - `ssl_tlsv1=YES`
