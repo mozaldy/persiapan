@@ -37,6 +37,7 @@
     - [Konfigurasi Samba](#konfigurasi-samba)
     - [Konfigurasi DNS](#konfigurasi-dns-1)
     - [Konfigurasi SSH](#konfigurasi-ssh)
+    - [Konfigurasi DHCP Server](#konfigurasi-dhcp-server-1)
 - [Tambahan](#tambahan)
   - [Router (Mikrotik)](#router-mikrotik-1)
     - [Merubah Jumlah TTL (Time To Live)](#merubah-jumlah-ttl-time-to-live)
@@ -688,6 +689,44 @@
       - Rubah atau Tambah:
         - Lihat [Ketentuan SSH](#ketentuan-port)
         - `Port PORT_SSH`
+
+### Konfigurasi DHCP Server
+- Penjelasan
+  ```Dinamic Host Configuration Protocol atau yang disingkat dengan DHCP merupakan protokol yang mengatur pemberian layanan pengalamatan (IP Address, Subnet Mask, IP Gateway, IP DNS) kepada komputer client secara otomatis (dinamis) sesuai dengan aturan-aturan yang telah ditetapkan di sisi server.```
+- Langkah-Langkah
+  - `sudo apt install isc-dhcp-server`
+  - Tentukan port interface yang akan digunakan sebagai DHCP Server
+    - `sudo ifconfig -a`
+  - `sudo nano /etc/network/interfaces`
+    - Rubah atau Tambah:
+      - ```
+        auto enp0s1
+        iface enp0s1 inet static
+          address 192.168.0.1
+          netmask 255.255.255.0
+          network 192.168.0.0
+          broadcast 192.168.0.255
+        ```
+  - `sudo nano /etc/dhcp/dhcpd.conf`
+    - Cari tulisan `A slightly different configuration for an internal subnet.`
+    - Rubah atau Tambah:
+      - ```
+        subnet 192.168.0.0 netmask 255.255.255.0 {
+          range 192.168.0.2 192.168.0.254;
+          option domain-name-servers 192.168.0.1;
+          option domain-name "aquabellus.org";
+          option routers 192.168.0.1
+          option broadcast-address 192.168.0.255
+          default-lease-time 600
+          max-lease-time 7200
+        };
+        ```
+  - `sudo nano /etc/default/isc-dhcp-server`
+    - Rubah atau Tambah:
+      - ```
+        INTERFACES="enp0s1" 
+        ```
+  - `sudo systemctl restart isc-dhcp-server`
 
 # Tambahan
 ## Router (Mikrotik)
